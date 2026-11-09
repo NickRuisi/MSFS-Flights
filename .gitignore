@@ -1,0 +1,23 @@
+bin/
+obj/
+publish/
+.vs/
+*.user
+
+# T-100 data (regenerate with t100/t100.py)
+t100/downloads/
+t100/*.db
+t100/*.db-wal
+t100/*.db-shm
+
+# Web app runtime data: the live database (users, API key hashes, flights). Created on first start.
+Web/App_Data/
+Web/logs/
+
+# Python
+__pycache__/
+*.pyc
+
+# Stray local databases
+*.db-wal
+*.db-shm

@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <!-- .NET 10 is the current LTS release (supported until Nov 2028). -->
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>MsfsTelemetry.Web</RootNamespace>
+    <AssemblyName>MsfsTelemetry.Web</AssemblyName>
+
+    <!-- IIS: run inside w3wp.exe (faster than out-of-process, no extra Kestrel hop).
+         Publish writes this into web.config's hostingModel attribute. -->
+    <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
+
+    <!-- No ICU culture data needed; keeps the deployment smaller. -->
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- The database is runtime data, not content. Never publish a dev copy over the server's. -->
+    <None Remove="App_Data\**" />
+    <Content Remove="App_Data\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Apis.Auth" Version="1.78.0" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.14" />
+  </ItemGroup>
+
+</Project>

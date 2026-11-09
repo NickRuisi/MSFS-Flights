@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<!-- Merge the <Launch.Addon> block into MSFS's real exe.xml (see README for its location). -->
+<SimBase.Document Type="SimConnect" version="1,0">
+  <Descr>Auto launch external applications on MSFS start</Descr>
+  <Filename>exe.xml</Filename>
+  <Disabled>False</Disabled>
+  <Launch.ManualLoad>False</Launch.ManualLoad>
+  <Launch.Addon>
+    <Name>MSFS Telemetry Companion</Name>
+    <Disabled>False</Disabled>
+    <Path>C:\Path\To\publish\MsfsTelemetry.exe</Path>
+    <CommandLine>--Telemetry:ExitWhenSimulatorQuits=true</CommandLine>
+  </Launch.Addon>
+</SimBase.Document>

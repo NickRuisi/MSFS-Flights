@@ -1,0 +1,72 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Use "Exe" for a console window. Switch to "WinExe" to run with no window (see README). -->
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>MsfsTelemetry</RootNamespace>
+    <AssemblyName>MsfsTelemetry</AssemblyName>
+
+    <!-- SimConnect.dll is a native x64 library. AnyCPU or x86 fails at runtime with BadImageFormatException. -->
+    <PlatformTarget>x64</PlatformTarget>
+    <Platforms>x64</Platforms>
+
+    <!-- Keeps the companion app small: workstation GC and no ICU culture data. -->
+    <ServerGarbageCollection>false</ServerGarbageCollection>
+    <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <!--
+    Where to find SimConnect, checked in this order:
+      1. -p:SimConnectLibDir=...            (explicit override)
+      2. .\lib\                             (DLLs copied into the repo, so the build doesn't need the SDK installed)
+      3. %MSFS_SDK%\SimConnect SDK\lib\     (set by the MSFS SDK installer)
+      4. C:\MSFS SDK\SimConnect SDK\lib\    (default install path)
+    The folder must contain SimConnect.dll (native) and managed\Microsoft.FlightSimulator.SimConnect.dll.
+  -->
+  <PropertyGroup>
+    <SimConnectLibDir Condition="'$(SimConnectLibDir)' == '' And Exists('$(MSBuildProjectDirectory)\lib\SimConnect.dll')">$(MSBuildProjectDirectory)\lib\</SimConnectLibDir>
+    <SimConnectLibDir Condition="'$(SimConnectLibDir)' == '' And '$(MSFS_SDK)' != ''">$([MSBuild]::EnsureTrailingSlash('$(MSFS_SDK)'))SimConnect SDK\lib\</SimConnectLibDir>
+    <SimConnectLibDir Condition="'$(SimConnectLibDir)' == ''">C:\MSFS SDK\SimConnect SDK\lib\</SimConnectLibDir>
+    <SimConnectLibDir>$([MSBuild]::EnsureTrailingSlash('$(SimConnectLibDir)'))</SimConnectLibDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Managed wrapper: a normal assembly reference. Private=true copies it to the output folder. -->
+    <Reference Include="Microsoft.FlightSimulator.SimConnect">
+      <HintPath>$(SimConnectLibDir)managed\Microsoft.FlightSimulator.SimConnect.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+
+    <!-- Native SimConnect.dll: the managed wrapper loads it at runtime. MSBuild can't reference it,
+         so it is copied next to the exe as content (on build and on publish). -->
+    <None Include="$(SimConnectLibDir)SimConnect.dll" Link="SimConnect.dll" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Visible="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.14" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="appsettings.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <!-- .\Web is a separate project (the web portal). Keep its sources and build output out of this one. -->
+  <ItemGroup>
+    <Compile Remove="Web\**" />
+    <None Remove="Web\**" />
+    <Content Remove="Web\**" />
+    <EmbeddedResource Remove="Web\**" />
+  </ItemGroup>
+
+  <!-- Stop the build with a clear message instead of an unresolved-reference warning. -->
+  <Target Name="VerifySimConnectSdk" BeforeTargets="ResolveAssemblyReferences">
+    <Error Condition="!Exists('$(SimConnectLibDir)SimConnect.dll') Or !Exists('$(SimConnectLibDir)managed\Microsoft.FlightSimulator.SimConnect.dll')" Text="SimConnect SDK not found in '$(SimConnectLibDir)'. Install the MSFS SDK, copy its 'SimConnect SDK\lib' folder to .\lib, or build with -p:SimConnectLibDir=&lt;path&gt;." />
+  </Target>
+
+</Project>

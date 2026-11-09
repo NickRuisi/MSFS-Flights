@@ -1,0 +1,6 @@
+bin/
+obj/
+publish/
+logs/
+# Runtime database (plus WAL side files airports.db-wal / airports.db-shm)
+App_Data/
